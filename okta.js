@@ -1,6 +1,12 @@
-Accounts.oauth.registerService('okta');
 
-if (Meteor.isClient){
+
+if (Meteor.isClient) {
+
+  setTimeout(() =>
+    Accounts.oauth.registerService('okta'),
+    10000
+  );
+
   /**
    * Meteor.loginWithOkta(options, callback)
    *
@@ -11,9 +17,12 @@ if (Meteor.isClient){
    * @param options
    * @param callback
    */
-  Meteor.loginWithOkta = function(options, callback) {
+  Meteor.loginWithOkta = function (options, callback) {
+
+    console.log('MeteorAccounts: loginWithOkta');
+
     // support a callback without options
-    if (! callback && typeof options === "function") {
+    if (!callback && typeof options === "function") {
       callback = options;
       options = null;
     }
@@ -24,11 +33,13 @@ if (Meteor.isClient){
       options.loginUrlParameters.hd = Accounts._options.restrictCreationByEmailDomain;
     }
 
-    var credentialRequestCompleteCallback = Accounts.oauth.credentialRequestCompleteHandler(callback);
+    const credentialRequestCompleteCallback = Accounts.oauth.credentialRequestCompleteHandler(callback);
     Okta.requestCredential(options, credentialRequestCompleteCallback);
   };
 
-}else{
+} else {
+
+  Accounts.oauth.registerService('okta')
 
   /**
    If autopublish is on, publish these user fields. Login service
@@ -42,14 +53,14 @@ if (Meteor.isClient){
     forLoggedInUser:
       // publish access token since it can be used from the client
       Okta.whitelistedFields.concat(['accessToken', 'expiresAt']).map( // don't publish refresh token
-      function (subfield) { return 'services.okta.' + subfield; }
-    ),
+        function (subfield) { return 'services.okta.' + subfield; }
+      ),
 
     forOtherUsers:
       // even with autopublish, no legitimate web app should be
       // publishing all users' emails
       whitelistedFields.map(
-      function (subfield) { return 'services.okta.' + subfield; })
+        function (subfield) { return 'services.okta.' + subfield; })
   });
 
 }
